@@ -2,6 +2,7 @@
 SECTION .data
 	format:	db "%s", 0x0a, 0
 	expext: db "expected '%c' at index %i but found '%c'", 0x0a,  0
+	succes: db "JSON is valid!", 0x0a, 0
 	lit_true: db "true", 0
 	lit_false: db "false", 0
 	lit_null: db "null", 0
@@ -37,10 +38,6 @@ readfile:
 	mov edx, buflen 		; buffer size
 	int 0x80
 
-	push tmpbuf
-	push format
-	call printf
-
 	mov eax, 6 				; syscall for close
 	mov ebx, [ebp-4] 		; file descriptor
 	int 0x80
@@ -55,6 +52,10 @@ validate:
 	
 	mov byte[index], 0
 	call object
+
+	push succes
+	push format
+	call printf
 
 	mov esp, ebp
 	pop ebp
@@ -350,15 +351,16 @@ main:
 	mov esi, dword[ebp+12] 	; address of argv
 	add esi, 4 				; get second argument
 
-	push dword[esi] 
+	push dword[esi]  		; push first argv as filename
 	call readfile
 
-	call strip
-	push buffer
+	call strip  			; strip whitespace from buffer
+
+	push buffer 			; print result
 	push format
 	call printf
 
-	call validate
+	call validate 
 
 	mov ebx, 0
 	mov eax, 0x1
@@ -367,11 +369,11 @@ main:
 error:
 	mov ebx, [index]
 	mov ecx, [buffer+ebx]
-	push ecx
-	push ebx
-	mov ebx, [exp_chr]
-	push ebx
-	push expext
+	push ecx 				; push current char
+	push ebx 				; push index
+	mov ebx, [exp_chr]  
+	push ebx 				; push expected character
+	push expext 			; format for error message
 	call printf
 	mov ebx, 1
 	mov eax, 0x1
