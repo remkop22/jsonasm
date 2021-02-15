@@ -53,6 +53,11 @@ validate:
 	mov byte[index], 0
 	call object
 
+	mov byte[exp_chr], 0
+	mov ebx, [index]
+	cmp byte[buffer+ebx], 0
+	jne error
+
 	push succes
 	push format
 	call printf
@@ -337,7 +342,6 @@ strip:
 		jmp .loop
 
 	.end:
-		inc ecx
 		mov byte[buffer+ecx], 0	
 		
 		mov esp, ebp
@@ -375,7 +379,7 @@ error:
 	push ebx 				; push expected character
 	push expext 			; format for error message
 	call printf
-	mov ebx, 1
+	mov ebx, ecx
 	mov eax, 0x1
 	int 0x80
 

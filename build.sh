@@ -1,5 +1,5 @@
 #!/bin/bash
-
+mkdir -p build
 name=$(echo $1 | cut -f 1 -d '.')
 
 nasm -g -f elf32 $1 -o ${name}.o
